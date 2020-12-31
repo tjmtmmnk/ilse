@@ -7,10 +7,9 @@ import (
 )
 
 type ilse struct {
-	stateMu sync.RWMutex
-	state   *state
-	config  *config
-	screen  tcell.Screen
+	state  *state
+	config *config
+	screen tcell.Screen
 }
 
 var (
@@ -25,8 +24,12 @@ func initApp() error {
 	if err := screen.Init(); err != nil {
 		return err
 	}
+	state := newState()
+	config := newConfig()
 	app = &ilse{
 		screen: screen,
+		state:  state,
+		config: config,
 	}
 	return nil
 }

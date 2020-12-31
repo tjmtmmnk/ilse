@@ -9,7 +9,6 @@ var (
 func initLayout() {
 	initSearchBar()
 	initList()
-	initPreview()
 	mainLayout = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(searchBar, 0, 3, true).SetDirection(tview.FlexRow).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
