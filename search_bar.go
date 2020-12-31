@@ -12,15 +12,28 @@ var (
 	searchBar *tview.InputField
 )
 
-func initSearchBar() error {
+func initSearchBar() {
 	searchBar = tview.NewInputField().SetLabel(">>> ")
 
 	searchBar.SetChangedFunc(func(text string) {
-		results, err := filter.Search(text, nil)
+		results, err := filter.Search(text, app.state.searchOption)
 		if err != nil {
+			log.Fatal("search")
 			log.Fatal(err)
 		}
+		app.state.mutex.Lock()
 		app.state.matched = results
+		app.state.mutex.Unlock()
+		if len(results) > 0 {
+			var texts []string
+			for _, r := range results {
+				texts = append(texts, r.Text)
+			}
+			updateList(texts)
+		} else {
+			list.Clear()
+			preview.Clear()
+		}
 	})
 
 	searchBar.SetDoneFunc(func(key tcell.Key) {
@@ -31,6 +44,4 @@ func initSearchBar() error {
 			frame.Stop()
 		}
 	})
-
-	return nil
 }
