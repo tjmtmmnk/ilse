@@ -11,31 +11,40 @@ var (
 )
 
 func initList() {
+	initPreview()
 	list = tview.NewList().ShowSecondaryText(false)
 
 	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		item := app.state.matched[index]
-		if index != item.Index {
-			log.Fatal("not match index")
+		if index >= len(app.state.matched) {
+			return
 		}
+		item := app.state.matched[index]
 
 		text, err := getPreviewContent(item)
-
-		text = tview.TranslateANSI(text)
 		if err != nil {
-			panic(err)
+			log.Fatalf("fail to fetch preview content : %v", err)
 		}
-		preview.Clear().SetText(text)
+		text = tview.TranslateANSI(text)
+		preview.SetText(text)
 	})
 
 	list.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		item := app.state.matched[index]
-		if index != item.Index {
-			log.Fatal("not match index")
+		f := func() {
+			openFile(item.FileName, item.LineNum)
 		}
+		frame.Suspend(f)
 	})
 
 	list.SetDoneFunc(func() {
 		frame.SetFocus(searchBar)
 	})
+}
+
+func updateList(items []string) {
+	list.Clear()
+	for _, item := range items {
+		text := tview.TranslateANSI(item)
+		list.AddItem(text, "", 0, nil)
+	}
 }
