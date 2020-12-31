@@ -25,7 +25,10 @@ func initApp() error {
 		return err
 	}
 	state := newState()
-	config := newConfig()
+	config, err := newConfig()
+	if err != nil {
+		return err
+	}
 	app = &ilse{
 		screen: screen,
 		state:  state,
