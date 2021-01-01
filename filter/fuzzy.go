@@ -11,11 +11,14 @@ import (
 	"github.com/sahilm/fuzzy"
 )
 
-type fuzzySearch struct{}
+func newFuzzySearch() *fuzzySearch {
+	return &fuzzySearch{
+		cachedFile: make(map[string]string),
+	}
+}
 
-type searchResultWithScore struct {
-	*SearchResult
-	score int
+type fuzzySearch struct {
+	cachedFile map[string]string
 }
 
 type file struct {
@@ -58,7 +61,14 @@ func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, er
 }
 
 func (f *fuzzySearch) getLine(fileName string, pos int) (int, string) {
-	text, _ := ioutil.ReadFile(fileName)
+	var text string
+	if f.cachedFile[fileName] != "" {
+		text = f.cachedFile[fileName]
+	} else {
+		content, _ := ioutil.ReadFile(fileName)
+		text = string(content)
+		f.cachedFile[fileName] = text
+	}
 	lineNum := 1
 	lineText := ""
 	to := pos

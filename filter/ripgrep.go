@@ -6,6 +6,10 @@ import (
 
 type rg struct{}
 
+func newRg() *rg {
+	return &rg{}
+}
+
 func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	var (
 		cmd []string

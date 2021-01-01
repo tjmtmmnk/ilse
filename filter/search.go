@@ -34,10 +34,10 @@ const (
 func NewFilter(cmd SearchCommand) filter {
 	switch cmd {
 	case RipGrep:
-		return &rg{}
+		return newRg()
 	case FuzzySearch:
-		return &fuzzySearch{}
+		return newFuzzySearch()
 	default:
-		return &rg{}
+		return newRg()
 	}
 }
