@@ -1,9 +1,13 @@
 package ilse
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/tjmtmmnk/ilse/filter"
+	"github.com/tjmtmmnk/ilse/util"
 )
 
 var (
@@ -13,6 +17,8 @@ var (
 func initList() {
 	initPreview()
 	list = tview.NewList().ShowSecondaryText(false)
+
+	list.SetBackgroundColor(tcell.ColorBlack)
 
 	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		if index >= len(app.state.matched) {
@@ -24,7 +30,6 @@ func initList() {
 		if err != nil {
 			log.Fatalf("fail to fetch preview content : %v", err)
 		}
-		text = tview.TranslateANSI(text)
 		preview.SetText(text)
 	})
 
@@ -39,6 +44,15 @@ func initList() {
 	list.SetDoneFunc(func() {
 		frame.SetFocus(searchBar)
 	})
+}
+
+func convertToListItems(results []filter.SearchResult) []string {
+	var items []string
+	for _, r := range results {
+		item := fmt.Sprintf("[purple:black:-]%s[-]:[green]%d[-] %s[-:black]", util.ShortFileName(r.FileName), r.LineNum, r.Text)
+		items = append(items, item)
+	}
+	return items
 }
 
 func updateList(items []string) {

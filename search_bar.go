@@ -13,23 +13,23 @@ var (
 )
 
 func initSearchBar() {
-	searchBar = tview.NewInputField().SetLabel(">>> ")
+	searchBar = tview.NewInputField().
+		SetLabel(">>> ").
+		SetFieldBackgroundColor(tcell.ColorBlack)
+
+	searchBar.SetBackgroundColor(tcell.ColorBlack)
 
 	searchBar.SetChangedFunc(func(text string) {
 		results, err := filter.Search(text, app.state.searchOption)
 		if err != nil {
-			log.Fatal("search")
-			log.Fatal(err)
+			log.Fatalf("search error : %v", err)
 		}
 		app.state.mutex.Lock()
 		app.state.matched = results
 		app.state.mutex.Unlock()
 		if len(results) > 0 {
-			var texts []string
-			for _, r := range results {
-				texts = append(texts, r.Text)
-			}
-			updateList(texts)
+			items := convertToListItems(results)
+			updateList(items)
 		} else {
 			list.Clear()
 			preview.Clear()

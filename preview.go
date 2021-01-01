@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/tjmtmmnk/ilse/filter"
 )
@@ -17,6 +19,8 @@ func initPreview() {
 	preview = tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true)
+
+	preview.SetBackgroundColor(tcell.ColorBlack)
 }
 
 func getPreviewContent(item filter.SearchResult) (string, error) {
@@ -25,9 +29,12 @@ func getPreviewContent(item filter.SearchResult) (string, error) {
 	if from < 0 {
 		from = 0
 	}
-	lineRange := fmt.Sprintf("%d:", from)
+	to := item.LineNum + (h/2 - 1)
+	lineRange := fmt.Sprintf("%d:%d", from, to)
 	cmd := []string{"bat", "--line-range", lineRange, "--highlight-line", strconv.Itoa(item.LineNum), "--color=always", "--theme", app.config.theme, "--style=numbers,changes", item.FileName}
 
 	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
-	return string(out), err
+	text := string(out)
+	text = strings.ReplaceAll(text, "\x1b[0m", "\x1b[39;40m")
+	return tview.TranslateANSI(text), err
 }

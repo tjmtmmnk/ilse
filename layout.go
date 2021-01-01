@@ -1,6 +1,8 @@
 package ilse
 
-import "github.com/rivo/tview"
+import (
+	"github.com/rivo/tview"
+)
 
 var (
 	mainLayout *tview.Flex
