@@ -19,8 +19,9 @@ func initSearchBar() {
 
 	searchBar.SetBackgroundColor(tcell.ColorBlack)
 
+	fl := filter.NewFilter(filter.FuzzySearch)
 	searchBar.SetChangedFunc(func(text string) {
-		results, err := filter.Search(text, app.state.searchOption)
+		results, err := fl.Search(text, app.state.searchOption)
 		if err != nil {
 			log.Fatalf("search error : %v", err)
 		}
