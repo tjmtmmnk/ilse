@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,12 +14,14 @@ import (
 
 func newFuzzySearch() *fuzzySearch {
 	return &fuzzySearch{
-		cachedFile: make(map[string]string),
+		cachedFile:  make(map[string]string),
+		isDuplicate: make(map[string]bool),
 	}
 }
 
 type fuzzySearch struct {
-	cachedFile map[string]string
+	cachedFile  map[string]string
+	isDuplicate map[string]bool
 }
 
 type file struct {
@@ -26,19 +29,21 @@ type file struct {
 	text string
 }
 
+func (f *fuzzySearch) purge() {
+	f.cachedFile = make(map[string]string)
+	f.isDuplicate = make(map[string]bool)
+}
+
 func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	var (
 		results []SearchResult
 		texts   []string
 	)
+	f.purge()
 
 	length := len(q)
 
 	files := f.getFiles()
-
-	if len(files) == 0 {
-		return []SearchResult{}, nil
-	}
 
 	for _, file := range files {
 		texts = append(texts, file.text)
@@ -52,8 +57,12 @@ func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, er
 			if text == "" {
 				continue
 			}
-			result := SearchResult{fileName, lineNum, text}
-			results = append(results, result)
+			key := fmt.Sprintf("%s%d", fileName, lineNum)
+			if f.isDuplicate[key] {
+				continue
+			}
+			f.isDuplicate[key] = true
+			results = append(results, SearchResult{fileName, lineNum, text})
 		}
 	}
 
