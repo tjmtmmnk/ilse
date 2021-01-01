@@ -1,9 +1,6 @@
 package ilse
 
-import (
-	"os"
-	"path/filepath"
-)
+import "github.com/tjmtmmnk/ilse/util"
 
 type config struct {
 	theme   string
@@ -11,17 +8,13 @@ type config struct {
 }
 
 func newConfig() (*config, error) {
-	workDir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	evaledWorkDir, err := filepath.EvalSymlinks(workDir)
+	workDir, err := util.GetWorkDir()
 	if err != nil {
 		return nil, err
 	}
 
 	return &config{
 		theme:   "OneHalfDark",
-		workDir: evaledWorkDir,
+		workDir: workDir,
 	}, nil
 }
