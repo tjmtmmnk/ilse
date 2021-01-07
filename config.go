@@ -1,6 +1,8 @@
 package ilse
 
-import "github.com/tjmtmmnk/ilse/util"
+import (
+	"github.com/tjmtmmnk/ilse/util"
+)
 
 type config struct {
 	theme   string

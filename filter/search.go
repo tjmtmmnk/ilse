@@ -9,21 +9,20 @@ type SearchResult struct {
 type SearchOption struct {
 	Command SearchCommand
 	Mode    SearchMode
+	Case    bool
 }
 
 type SearchMode int
 type SearchCommand int
 
-type filter interface {
+type Filter interface {
 	Search(string, *SearchOption) ([]SearchResult, error)
 }
 
 const (
 	Regex SearchMode = iota
-	FirstMatch
-	FirstMatchCase
+	HeadMatch
 	WordMatch
-	WordMatchCase
 )
 
 const (
@@ -31,7 +30,7 @@ const (
 	FuzzySearch
 )
 
-func NewFilter(cmd SearchCommand) filter {
+func NewFilter(cmd SearchCommand) Filter {
 	switch cmd {
 	case RipGrep:
 		return newRg()
@@ -39,5 +38,13 @@ func NewFilter(cmd SearchCommand) filter {
 		return newFuzzySearch()
 	default:
 		return newRg()
+	}
+}
+
+func DefaultOption() *SearchOption {
+	return &SearchOption{
+		Command: RipGrep,
+		Mode:    HeadMatch,
+		Case:    false,
 	}
 }

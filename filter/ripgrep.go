@@ -17,8 +17,8 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	if !isValidQuery(q) {
 		return []SearchResult{}, nil
 	}
-	switch option.Mode {
-	case Regex:
+	switch mode := option.Mode; {
+	case mode == Regex:
 		if isValidRegex(q) {
 			cmd = []string{
 				"rg", "--color=always", "--line-number", "--with-filename",
@@ -27,22 +27,22 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 		} else {
 			return []SearchResult{}, nil
 		}
-	case FirstMatch:
+	case mode == HeadMatch && !option.Case:
 		cmd = []string{
 			"rg", "--color=always", "--line-number", "--with-filename",
 			"--colors=path:none", "--colors=line:none", "-i", q,
 		}
-	case FirstMatchCase:
+	case mode == HeadMatch && option.Case:
 		cmd = []string{
 			"rg", "--color=always", "--line-number", "--with-filename",
 			"--colors=path:none", "--colors=line:none", q,
 		}
-	case WordMatch:
+	case mode == WordMatch && !option.Case:
 		cmd = []string{
 			"rg", "--color=always", "--line-number", "--with-filename",
 			"--colors=path:none", "--colors=line:none", "-wi", q,
 		}
-	case WordMatchCase:
+	case mode == WordMatch && option.Case:
 		cmd = []string{
 			"rg", "--color=always", "--line-number", "--with-filename",
 			"--colors=path:none", "--colors=line:none", "-w", q,

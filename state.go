@@ -7,20 +7,14 @@ import (
 )
 
 type state struct {
-	mutex        sync.RWMutex
-	currentPage  string
-	matched      []filter.SearchResult
-	fileCache    map[string][]string
-	targetDir    []string
-	ignoreDir    []string
-	searchOption *filter.SearchOption
+	mutex       sync.RWMutex
+	currentPage string
+	matched     []filter.SearchResult
+	fileCache   map[string][]string
+	targetDir   []string
+	ignoreDir   []string
 }
 
 func newState() *state {
-	return &state{
-		searchOption: &filter.SearchOption{
-			Command: filter.RipGrep,
-			Mode:    filter.FirstMatch,
-		},
-	}
+	return &state{}
 }

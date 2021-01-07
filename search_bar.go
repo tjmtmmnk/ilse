@@ -1,6 +1,7 @@
 package ilse
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gdamore/tcell/v2"
@@ -12,16 +13,51 @@ var (
 	searchBar *tview.InputField
 )
 
+func searchBarHeader() string {
+	filterName := func() string {
+		switch app.searchOption.Command {
+		case filter.RipGrep:
+			return "Rg"
+		case filter.FuzzySearch:
+			return "Fs"
+		default:
+			return ""
+		}
+	}()
+
+	modeName := func() string {
+		switch opt := app.searchOption; {
+		case opt.Mode == filter.HeadMatch && !opt.Case:
+			return "HM"
+		case opt.Mode == filter.HeadMatch && opt.Case:
+			return "HM,C"
+		case opt.Mode == filter.WordMatch && !opt.Case:
+			return "WM"
+		case opt.Mode == filter.WordMatch && opt.Case:
+			return "WM,C"
+		case opt.Mode == filter.Regex:
+			return "Re"
+		default:
+			return ""
+		}
+	}()
+	return fmt.Sprintf("(%s|%s >>>)", filterName, modeName)
+}
+
+func updateSearchBarHeader() {
+	searchBar.SetLabel(searchBarHeader())
+}
+
 func initSearchBar() {
 	searchBar = tview.NewInputField().
-		SetLabel(">>> ").
+		SetLabel(searchBarHeader()).
 		SetFieldBackgroundColor(tcell.ColorBlack)
 
 	searchBar.SetBackgroundColor(tcell.ColorBlack)
 
-	fl := filter.NewFilter(filter.FuzzySearch)
 	searchBar.SetChangedFunc(func(text string) {
-		results, err := fl.Search(text, app.state.searchOption)
+		ftr := filter.NewFilter(app.searchOption.Command)
+		results, err := ftr.Search(text, app.searchOption)
 		if err != nil {
 			log.Fatalf("search error : %v", err)
 		}

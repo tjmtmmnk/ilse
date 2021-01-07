@@ -1,15 +1,17 @@
 package ilse
 
 import (
-	"sync"
+	"os"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/tjmtmmnk/ilse/filter"
 )
 
 type ilse struct {
-	state  *state
-	config *config
-	screen tcell.Screen
+	state        *state
+	config       *config
+	searchOption *filter.SearchOption
+	screen       tcell.Screen
 }
 
 var (
@@ -29,10 +31,12 @@ func initApp() error {
 	if err != nil {
 		return err
 	}
+	searchOption := filter.DefaultOption()
 	app = &ilse{
-		screen: screen,
-		state:  state,
-		config: config,
+		screen:       screen,
+		state:        state,
+		config:       config,
+		searchOption: searchOption,
 	}
 	return nil
 }

@@ -116,8 +116,8 @@ func (f *fuzzySearch) getFiles() []file {
 			}
 
 			mu.Lock()
+			defer mu.Unlock()
 			files = append(files, file{name, string(text)})
-			mu.Unlock()
 		}(name)
 	}
 	wg.Wait()
