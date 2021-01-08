@@ -47,6 +47,8 @@ func initFrame() error {
 			updateSearchBarHeader()
 		case key == tcell.KeyCtrlD:
 			pages.SwitchToPage("tree")
+		case key == tcell.KeyCtrlN:
+			app.searchOption.TargetDir = ""
 		}
 		return event
 	})

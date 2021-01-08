@@ -43,7 +43,12 @@ func initTree() error {
 	})
 
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
-		app.searchOption.TargetDir = node.GetReference().(string)
+		reference := node.GetReference()
+		path := rootDir
+		if reference != nil {
+			path = reference.(string)
+		}
+		app.searchOption.TargetDir = path
 		pages.SwitchToPage(mainPage)
 	})
 
