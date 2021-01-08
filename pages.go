@@ -5,7 +5,9 @@ import (
 )
 
 var (
-	pages *tview.Pages
+	pages    *tview.Pages
+	mainPage = "main"
+	treePage = "tree"
 )
 
 func initPages() error {
@@ -14,7 +16,7 @@ func initPages() error {
 		return err
 	}
 	pages = tview.NewPages().
-		AddPage("main", mainLayout, true, true).
-		AddPage("tree", tree, true, false)
+		AddPage(mainPage, mainLayout, true, true).
+		AddPage(treePage, tree, true, false)
 	return nil
 }

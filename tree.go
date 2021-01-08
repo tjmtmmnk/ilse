@@ -30,6 +30,10 @@ func initTree() error {
 		SetCurrentNode(root)
 
 	tree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		currentPage, _ := pages.GetFrontPage()
+		if currentPage != treePage {
+			return event
+		}
 		if event.Key() == tcell.KeyRight || event.Rune() == 'l' {
 			if err := expand(tree.GetCurrentNode()); err != nil {
 				log.Fatalf("expand error : %v", err)
@@ -40,11 +44,11 @@ func initTree() error {
 
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
 		app.searchOption.TargetDir = node.GetReference().(string)
-		pages.SwitchToPage("main")
+		pages.SwitchToPage(mainPage)
 	})
 
 	tree.SetDoneFunc(func(key tcell.Key) {
-		pages.SwitchToPage("main")
+		pages.SwitchToPage(mainPage)
 	})
 
 	return nil

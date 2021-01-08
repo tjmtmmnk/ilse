@@ -16,7 +16,12 @@ func initFrame() error {
 	}
 	frame = tview.NewApplication().SetScreen(app.screen)
 	frame.SetRoot(pages, true).EnableMouse(true)
+
 	frame.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		currentPage, _ := pages.GetFrontPage()
+		if currentPage != mainPage {
+			return event
+		}
 		switch key := event.Key(); {
 		case key == tcell.KeyRune || key == tcell.KeyBackspace || key == tcell.KeyBackspace2:
 			frame.SetFocus(searchBar)
