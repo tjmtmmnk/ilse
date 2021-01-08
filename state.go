@@ -11,8 +11,6 @@ type state struct {
 	currentPage string
 	matched     []filter.SearchResult
 	fileCache   map[string][]string
-	targetDir   []string
-	ignoreDir   []string
 }
 
 func newState() *state {

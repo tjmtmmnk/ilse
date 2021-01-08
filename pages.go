@@ -8,7 +8,13 @@ var (
 	pages *tview.Pages
 )
 
-func initPages() {
+func initPages() error {
 	initLayout()
-	pages = tview.NewPages().AddPage("main", mainLayout, true, true)
+	if err := initTree(); err != nil {
+		return err
+	}
+	pages = tview.NewPages().
+		AddPage("main", mainLayout, true, true).
+		AddPage("tree", tree, true, false)
+	return nil
 }

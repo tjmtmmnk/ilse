@@ -7,9 +7,10 @@ type SearchResult struct {
 }
 
 type SearchOption struct {
-	Command SearchCommand
-	Mode    SearchMode
-	Case    bool
+	Command   SearchCommand
+	Mode      SearchMode
+	Case      bool
+	TargetDir string
 }
 
 type SearchMode int

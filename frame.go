@@ -10,8 +10,10 @@ var (
 	frame *tview.Application
 )
 
-func initFrame() {
-	initPages()
+func initFrame() error {
+	if err := initPages(); err != nil {
+		return err
+	}
 	frame = tview.NewApplication().SetScreen(app.screen)
 	frame.SetRoot(pages, true).EnableMouse(true)
 	frame.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -26,7 +28,7 @@ func initFrame() {
 		case key == tcell.KeyCtrlE:
 			app.searchOption.Mode = filter.HeadMatch
 			updateSearchBarHeader()
-		case key == tcell.KeyCtrlI:
+		case key == tcell.KeyCtrlT:
 			app.searchOption.Case = !app.searchOption.Case
 			updateSearchBarHeader()
 		case key == tcell.KeyCtrlR:
@@ -38,7 +40,10 @@ func initFrame() {
 		case key == tcell.KeyCtrlF:
 			app.searchOption.Command = filter.FuzzySearch
 			updateSearchBarHeader()
+		case key == tcell.KeyCtrlD:
+			pages.SwitchToPage("tree")
 		}
 		return event
 	})
+	return nil
 }
