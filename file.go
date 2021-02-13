@@ -27,7 +27,7 @@ func getEditor() string {
 
 func openFile(fileName string, lineNum int) {
 	editor := getEditor()
-	path := path.Join(app.config.workDir, fileName)
+	path := path.Join(cfg.userWorkDir, fileName)
 	lineFlag := fmt.Sprintf("%s%d", getEditorLineFlag(), lineNum)
 
 	var cmd *exec.Cmd

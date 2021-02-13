@@ -15,7 +15,7 @@ var (
 )
 
 func initTree() error {
-	rootDir, err := util.GetWorkDir()
+	rootDir, err := util.GetUserWorkDir()
 	if err != nil {
 		return err
 	}

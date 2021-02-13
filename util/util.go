@@ -19,12 +19,12 @@ func ShortFileName(fileName string) string {
 	}
 }
 
-func GetWorkDir() (string, error) {
-	workDir, err := os.Getwd()
+func GetUserWorkDir() (string, error) {
+	userWorkDir, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
-	evaled, err := filepath.EvalSymlinks(workDir)
+	evaled, err := filepath.EvalSymlinks(userWorkDir)
 	if err != nil {
 		return "", err
 	}

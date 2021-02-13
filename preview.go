@@ -31,7 +31,7 @@ func getPreviewContent(item filter.SearchResult) (string, error) {
 	}
 	to := item.LineNum + (h/2 - 1)
 	lineRange := fmt.Sprintf("%d:%d", from, to)
-	cmd := []string{"bat", "--line-range", lineRange, "--highlight-line", strconv.Itoa(item.LineNum), "--color=always", "--theme", app.config.theme, "--style=numbers,changes", item.FileName}
+	cmd := []string{"bat", "--line-range", lineRange, "--highlight-line", strconv.Itoa(item.LineNum), "--color=always", "--theme", cfg.theme, "--style=numbers,changes", item.FileName}
 
 	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
 	text := string(out)
