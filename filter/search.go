@@ -11,6 +11,7 @@ type SearchOption struct {
 	Mode      SearchMode
 	Case      bool
 	TargetDir string
+	Limit     int
 }
 
 type SearchMode int

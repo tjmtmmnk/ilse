@@ -15,7 +15,10 @@ func isValidRegex(q string) bool {
 
 func convert(result string, option *SearchOption) []SearchResult {
 	var results []SearchResult
-	for _, s := range strings.Split(string(result), "\n") {
+	for i, s := range strings.Split(string(result), "\n") {
+		if i > option.Limit {
+			break
+		}
 		ignore, result := split(s, option)
 		if !ignore {
 			results = append(results, result)
