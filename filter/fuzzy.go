@@ -38,12 +38,18 @@ func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, er
 	var (
 		results []SearchResult
 		texts   []string
+		dir     string
 	)
 	f.purge()
 
 	length := len(q)
 
-	files := f.getFiles()
+	if option.TargetDir != "" {
+		dir = option.TargetDir
+	} else {
+		dir = "."
+	}
+	files := f.getFiles(dir)
 
 	for _, file := range files {
 		texts = append(texts, file.text)
@@ -95,11 +101,12 @@ func (f *fuzzySearch) getLine(fileName string, pos int) (int, string) {
 	return lineNum, lineText
 }
 
-func (f *fuzzySearch) getFiles() []file {
+func (f *fuzzySearch) getFiles(dir string) []file {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	var files []file
-	fileNames, _ := f.getFileNames()
+
+	fileNames, _ := f.getFileNames(dir)
 	for _, name := range fileNames {
 
 		wg.Add(1)
@@ -140,9 +147,9 @@ func (f *fuzzySearch) reIndex(indexes []int, queryLength int) []int {
 	return reIndexes
 }
 
-func (f *fuzzySearch) getFileNames() ([]string, error) {
+func (f *fuzzySearch) getFileNames(dir string) ([]string, error) {
 	var fileNames []string
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
