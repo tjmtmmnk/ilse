@@ -41,11 +41,28 @@ func searchBarHeader() string {
 			return ""
 		}
 	}()
-	return fmt.Sprintf("(%s|%s >>>)", filterName, modeName)
+
+	isOverMax := len(app.state.matched) > cfg.maxSearchResults
+
+	header := fmt.Sprintf("(%s|%s) >>>", filterName, modeName)
+	if isOverMax {
+		header = fmt.Sprintf("(%s|%s (%d+)) >>>", filterName, modeName, cfg.maxSearchResults)
+	}
+
+	return header
 }
 
 func updateSearchBarHeader() {
 	searchBar.SetLabel(searchBarHeader())
+}
+
+func clear() {
+	list.Clear()
+	preview.Clear()
+	app.state.mutex.Lock()
+	app.state.matched = []filter.SearchResult{}
+	app.state.mutex.Unlock()
+	updateSearchBarHeader()
 }
 
 func initSearchBar() {
@@ -56,6 +73,10 @@ func initSearchBar() {
 	searchBar.SetBackgroundColor(tcell.ColorBlack)
 
 	searchBar.SetChangedFunc(func(text string) {
+		if len(text) < 2 {
+			clear()
+			return
+		}
 		ftr := filter.NewFilter(app.searchOption.Command)
 		results, err := ftr.Search(text, app.searchOption)
 		if err != nil {
@@ -64,12 +85,17 @@ func initSearchBar() {
 		app.state.mutex.Lock()
 		app.state.matched = results
 		app.state.mutex.Unlock()
+		updateSearchBarHeader()
+
 		if len(results) > 0 {
-			items := convertToListItems(results)
+			last := len(results)
+			if len(results) > cfg.maxSearchResults {
+				last = cfg.maxSearchResults
+			}
+			items := convertToListItems(results[0:last])
 			updateList(items)
 		} else {
-			list.Clear()
-			preview.Clear()
+			clear()
 		}
 	})
 
