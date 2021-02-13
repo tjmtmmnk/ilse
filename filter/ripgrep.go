@@ -31,7 +31,7 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	case WordMatch:
 		cmd = append(cmd, "-w")
 	}
-	if !option.Case {
+	if option.Mode != Regex && !option.Case {
 		cmd = append(cmd, "-i")
 	}
 

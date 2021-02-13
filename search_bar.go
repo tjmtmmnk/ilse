@@ -44,9 +44,9 @@ func searchBarHeader() string {
 
 	isOverMax := len(app.state.matched) > cfg.maxSearchResults
 
-	header := fmt.Sprintf("(%s|%s) >>>", filterName, modeName)
+	header := fmt.Sprintf("(%s|%s) >>> ", filterName, modeName)
 	if isOverMax {
-		header = fmt.Sprintf("(%s|%s (%d+)) >>>", filterName, modeName, cfg.maxSearchResults)
+		header = fmt.Sprintf("(%s|%s (%d+)) >>> ", filterName, modeName, cfg.maxSearchResults)
 	}
 
 	return header
