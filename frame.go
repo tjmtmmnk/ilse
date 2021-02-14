@@ -49,6 +49,8 @@ func initFrame() error {
 			pages.SwitchToPage("tree")
 		case key == tcell.KeyCtrlN:
 			app.searchOption.TargetDir = ""
+		case key == tcell.KeyCtrlB:
+			clearAll()
 		}
 		return event
 	})

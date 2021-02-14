@@ -64,13 +64,18 @@ func updateSearchBarHeader() {
 	searchBar.SetLabel(searchBarHeader())
 }
 
-func clear() {
+func clearResult() {
 	list.Clear()
 	preview.Clear()
 	app.state.mutex.Lock()
 	app.state.matched = []filter.SearchResult{}
 	app.state.mutex.Unlock()
 	updateSearchBarHeader()
+}
+
+func clearAll() {
+	searchBar.SetText("")
+	clearResult()
 }
 
 func initSearchBar() {
@@ -82,7 +87,7 @@ func initSearchBar() {
 
 	searchBar.SetChangedFunc(func(text string) {
 		if len(text) < 2 {
-			clear()
+			clearResult()
 			return
 		}
 		ftr := filter.NewFilter(app.searchOption.Command)
@@ -103,7 +108,7 @@ func initSearchBar() {
 			items := convertToListItems(results[0:last])
 			updateList(items)
 		} else {
-			clear()
+			clearResult()
 		}
 	})
 
