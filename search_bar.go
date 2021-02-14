@@ -26,6 +26,10 @@ func searchBarHeader() string {
 	}()
 
 	modeName := func() string {
+		if app.searchOption.Command == filter.FuzzySearch {
+			return ""
+		}
+
 		switch opt := app.searchOption; {
 		case opt.Mode == filter.HeadMatch && !opt.Case:
 			return "HM"
@@ -42,11 +46,16 @@ func searchBarHeader() string {
 		}
 	}()
 
-	isOverMax := len(app.state.matched) > cfg.maxSearchResults
+	isOverMax := len(app.state.matched) > conf.MaxSearchResults
 
-	header := fmt.Sprintf("(%s|%s) >>> ", filterName, modeName)
+	var header string
+	if modeName == "" {
+		header = fmt.Sprintf("(%s) >>> ", filterName)
+	} else {
+		header = fmt.Sprintf("(%s|%s) >>> ", filterName, modeName)
+	}
 	if isOverMax {
-		header = fmt.Sprintf("(%s|%s (%d+)) >>> ", filterName, modeName, cfg.maxSearchResults)
+		header = fmt.Sprintf("(%s|%s (%d+)) >>> ", filterName, modeName, conf.MaxSearchResults)
 	}
 
 	return header
@@ -89,8 +98,8 @@ func initSearchBar() {
 
 		if len(results) > 0 {
 			last := len(results)
-			if len(results) > cfg.maxSearchResults {
-				last = cfg.maxSearchResults
+			if len(results) > conf.MaxSearchResults {
+				last = conf.MaxSearchResults
 			}
 			items := convertToListItems(results[0:last])
 			updateList(items)

@@ -15,7 +15,7 @@ type ilse struct {
 
 var (
 	app    *ilse
-	cfg    *config
+	conf   *Config
 	logger *Logger
 )
 
@@ -27,11 +27,26 @@ func initApp() error {
 	if err := screen.Init(); err != nil {
 		return err
 	}
+
 	state := newState()
 
-	os.MkdirAll(cfg.homeDir, 0766)
-	searchOption := filter.DefaultOption()
-	searchOption.Limit = cfg.maxSearchResults
+	os.MkdirAll(conf.homeDir, 0766)
+
+	command, err := filter.CommandByName(conf.SearchCommand)
+	if err != nil {
+		return err
+	}
+	mode, err := filter.ModeByName(conf.SearchMode)
+	if err != nil {
+		return err
+	}
+	searchOption := &filter.SearchOption{
+		Command: command,
+		Mode:    mode,
+		Case:    conf.CaseSensitive,
+		Limit:   conf.MaxSearchResults,
+	}
+
 	app = &ilse{
 		screen:       screen,
 		state:        state,
@@ -40,12 +55,10 @@ func initApp() error {
 	return nil
 }
 
-func Init() error {
+func Init(cfg *Config) error {
 	var err error
-	cfg, err = newConfig()
-	if err != nil {
-		return err
-	}
+
+	conf = cfg
 
 	if err := initApp(); err != nil {
 		return err

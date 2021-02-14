@@ -27,7 +27,7 @@ type Logger struct {
 }
 
 func newLogger() (*Logger, error) {
-	path := fmt.Sprintf("%s/log.txt", cfg.homeDir)
+	path := fmt.Sprintf("%s/log.txt", conf.homeDir)
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
 	if err != nil {
 		return nil, err

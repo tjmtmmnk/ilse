@@ -1,5 +1,7 @@
 package filter
 
+import "errors"
+
 type SearchResult struct {
 	FileName string
 	LineNum  int
@@ -25,11 +27,13 @@ const (
 	Regex SearchMode = iota
 	HeadMatch
 	WordMatch
+	NoneMode
 )
 
 const (
 	RipGrep SearchCommand = iota
 	FuzzySearch
+	NoneCommand
 )
 
 func NewFilter(cmd SearchCommand) Filter {
@@ -43,10 +47,26 @@ func NewFilter(cmd SearchCommand) Filter {
 	}
 }
 
-func DefaultOption() *SearchOption {
-	return &SearchOption{
-		Command: RipGrep,
-		Mode:    HeadMatch,
-		Case:    false,
+func CommandByName(v string) (SearchCommand, error) {
+	switch v {
+	case "rg":
+		return RipGrep, nil
+	case "fuzzy":
+		return FuzzySearch, nil
+	default:
+		return NoneCommand, errors.New("seach command name unmatch")
+	}
+}
+
+func ModeByName(v string) (SearchMode, error) {
+	switch v {
+	case "head":
+		return HeadMatch, nil
+	case "word":
+		return WordMatch, nil
+	case "regex":
+		return Regex, nil
+	default:
+		return NoneMode, errors.New("search mode name unmatch")
 	}
 }

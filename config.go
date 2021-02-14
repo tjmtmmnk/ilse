@@ -7,14 +7,17 @@ import (
 	"github.com/tjmtmmnk/ilse/util"
 )
 
-type config struct {
-	theme            string
+type Config struct {
+	Theme            string
 	userWorkDir      string
 	homeDir          string
-	maxSearchResults int
+	MaxSearchResults int
+	SearchCommand    string
+	SearchMode       string
+	CaseSensitive    bool
 }
 
-func newConfig() (*config, error) {
+func NewConfig() (*Config, error) {
 	userWorkDir, err := util.GetUserWorkDir()
 	if err != nil {
 		return nil, err
@@ -26,10 +29,13 @@ func newConfig() (*config, error) {
 	}
 	homeDir := fmt.Sprintf("%s/.ilse", userHomeDir)
 
-	return &config{
-		theme:            "OneHalfDark",
+	return &Config{
+		Theme:            "OneHalfDark",
 		userWorkDir:      userWorkDir,
 		homeDir:          homeDir,
-		maxSearchResults: 100,
+		MaxSearchResults: 100,
+		SearchCommand:    "rg",
+		SearchMode:       "head",
+		CaseSensitive:    false,
 	}, nil
 }
