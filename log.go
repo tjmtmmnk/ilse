@@ -49,6 +49,7 @@ func (l *Logger) Warn(v ...interface{}) {
 
 func (l *Logger) Error(v ...interface{}) {
 	l.Print(PREFIX_ERROR, v, "\033[39;49m\n")
+	os.Exit(0)
 }
 
 func (l *Logger) Debug(v ...interface{}) {

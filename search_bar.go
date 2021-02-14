@@ -2,7 +2,6 @@ package ilse
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -89,7 +88,7 @@ func initSearchBar() {
 		ftr := filter.NewFilter(app.searchOption.Command)
 		results, err := ftr.Search(text, app.searchOption)
 		if err != nil {
-			log.Fatalf("search error : %v", err)
+			logger.Error("search error : %v", err)
 		}
 		app.state.mutex.Lock()
 		app.state.matched = results

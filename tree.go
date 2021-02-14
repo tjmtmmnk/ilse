@@ -2,7 +2,6 @@ package ilse
 
 import (
 	"io/ioutil"
-	"log"
 	"path/filepath"
 
 	"github.com/gdamore/tcell/v2"
@@ -36,7 +35,7 @@ func initTree() error {
 		}
 		if event.Key() == tcell.KeyRight || event.Rune() == 'l' {
 			if err := expand(tree.GetCurrentNode()); err != nil {
-				log.Fatalf("expand error : %v", err)
+				logger.Error("expand error : %v", err)
 			}
 		}
 		return event

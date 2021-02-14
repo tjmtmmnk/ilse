@@ -2,7 +2,6 @@ package ilse
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -28,7 +27,7 @@ func initList() {
 
 		text, err := getPreviewContent(item)
 		if err != nil {
-			log.Fatalf("fail to fetch preview content : %v", err)
+			logger.Error("fail to fetch preview content : %v", err)
 		}
 		preview.SetText(text)
 	})

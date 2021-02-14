@@ -2,10 +2,8 @@ package ilse
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 )
 
@@ -27,7 +25,11 @@ func getEditor() string {
 
 func openFile(fileName string, lineNum int) {
 	editor := getEditor()
-	path := path.Join(conf.userWorkDir, fileName)
+
+	path := filepath.Join(conf.userWorkDir, fileName)
+	if filepath.IsAbs(fileName) {
+		path = fileName
+	}
 	lineFlag := fmt.Sprintf("%s%d", getEditorLineFlag(), lineNum)
 
 	var cmd *exec.Cmd
@@ -46,6 +48,6 @@ func openFile(fileName string, lineNum int) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		log.Fatal("can't open file")
+		logger.Error("can't open file")
 	}
 }
