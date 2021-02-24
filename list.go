@@ -34,10 +34,13 @@ func initList() {
 
 	list.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		item := app.state.matched[index]
-		f := func() {
-			openFile(item.FileName, item.LineNum)
+		if err := app.screen.Suspend(); err != nil {
+			logger.Error("failed to suspend: " + err.Error())
 		}
-		frame.Suspend(f)
+		openFile(item.FileName, item.LineNum)
+		if err := app.screen.Resume(); err != nil {
+			logger.Error("failed to resume: " + err.Error())
+		}
 	})
 
 	list.SetDoneFunc(func() {
