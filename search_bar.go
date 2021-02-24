@@ -14,14 +14,14 @@ var (
 
 func searchBarHeader() string {
 	filterName := func() string {
+		name := ""
 		switch app.searchOption.Command {
 		case filter.RipGrep:
-			return "Rg"
+			name = "Rg"
 		case filter.FuzzySearch:
-			return "Fs"
-		default:
-			return ""
+			name = "Fs"
 		}
+		return name
 	}()
 
 	modeName := func() string {
@@ -29,33 +29,33 @@ func searchBarHeader() string {
 			return ""
 		}
 
+		name := ""
 		switch opt := app.searchOption; {
-		case opt.Mode == filter.HeadMatch && !opt.Case:
-			return "HM"
-		case opt.Mode == filter.HeadMatch && opt.Case:
-			return "HM,C"
-		case opt.Mode == filter.WordMatch && !opt.Case:
-			return "WM"
-		case opt.Mode == filter.WordMatch && opt.Case:
-			return "WM,C"
+		case opt.Mode == filter.HeadMatch:
+			name = "HM"
+		case opt.Mode == filter.WordMatch:
+			name = "WM"
 		case opt.Mode == filter.Regex:
-			return "Re"
-		default:
-			return ""
+			name = "Re"
 		}
+
+		if app.searchOption.Mode != filter.Regex && app.searchOption.Case {
+			name += ",C"
+		}
+
+		return name
 	}()
 
 	isOverMax := len(app.state.matched) > conf.MaxSearchResults
 
-	var header string
-	if modeName == "" {
-		header = fmt.Sprintf("(%s) >>> ", filterName)
-	} else {
-		header = fmt.Sprintf("(%s|%s) >>> ", filterName, modeName)
+	header := filterName
+	if modeName != "" {
+		header += ("|" + modeName)
 	}
 	if isOverMax {
-		header = fmt.Sprintf("(%s|%s (%d+)) >>> ", filterName, modeName, conf.MaxSearchResults)
+		header += (" " + fmt.Sprintf("(%d+)", conf.MaxSearchResults))
 	}
+	header = fmt.Sprintf("(%s) >>> ", header)
 
 	return header
 }
