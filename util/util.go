@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -19,15 +20,39 @@ func ShortFileName(fileName string) string {
 	}
 }
 
+// if use git, return repository
+// else return current directory
 func GetUserWorkDir() (string, error) {
-	userWorkDir, err := os.Getwd()
+	repo, err := getGitRepository()
 	if err != nil {
 		return "", err
 	}
-	evaled, err := filepath.EvalSymlinks(userWorkDir)
+	if repo != "" {
+		return repo, nil
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	evaled, err := filepath.EvalSymlinks(wd)
 	if err != nil {
 		return "", err
 	}
 
 	return evaled, nil
+}
+
+func getGitRepository() (string, error) {
+	cmd := []string{"git", "rev-parse", "--show-toplevel"}
+	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
+	if err != nil {
+		return "", err
+	}
+	str := strings.Split(string(out), "\n")
+	if len(str) == 0 {
+		return "", nil
+	}
+	repo := str[0]
+	return repo, nil
 }

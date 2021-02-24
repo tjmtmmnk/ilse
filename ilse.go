@@ -41,10 +41,11 @@ func initApp() error {
 		return err
 	}
 	searchOption := &filter.SearchOption{
-		Command: command,
-		Mode:    mode,
-		Case:    conf.CaseSensitive,
-		Limit:   conf.MaxSearchResults,
+		Command:   command,
+		Mode:      mode,
+		Case:      conf.CaseSensitive,
+		Limit:     conf.MaxSearchResults,
+		TargetDir: conf.userWorkDir,
 	}
 
 	app = &ilse{
