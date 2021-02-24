@@ -9,19 +9,31 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/monochromegane/go-gitignore"
 	"github.com/sahilm/fuzzy"
 )
 
-func newFuzzySearch() *fuzzySearch {
-	return &fuzzySearch{
+func newFuzzySearch(option *SearchOption) *fuzzySearch {
+	fs := &fuzzySearch{
 		cachedFile:  make(map[string]string),
 		isDuplicate: make(map[string]bool),
 	}
+	gitIgnorePath := filepath.Join(option.TargetDir, ".gitignore")
+	if _, err := os.Stat(gitIgnorePath); os.IsExist(err) {
+		gitIgnore, err := gitignore.NewGitIgnore(gitIgnorePath)
+		if err == nil {
+			fs.lookGitIgnore = true
+			fs.gitIgnore = gitIgnore
+		}
+	}
+	return fs
 }
 
 type fuzzySearch struct {
-	cachedFile  map[string]string
-	isDuplicate map[string]bool
+	cachedFile    map[string]string
+	isDuplicate   map[string]bool
+	gitIgnore     gitignore.IgnoreMatcher
+	lookGitIgnore bool
 }
 
 type file struct {
@@ -152,6 +164,16 @@ func (f *fuzzySearch) getFileNames(dir string) ([]string, error) {
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
+		}
+		if f.lookGitIgnore && f.gitIgnore.Match(path, false) {
+			return nil
+		}
+		// skip hidden directory or file
+		components := strings.Split(path, "/")
+		for _, comp := range components {
+			if strings.HasPrefix(comp, ".") {
+				return nil
+			}
 		}
 		fileNames = append(fileNames, path)
 		return nil

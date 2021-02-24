@@ -36,12 +36,12 @@ const (
 	NoneCommand
 )
 
-func NewFilter(cmd SearchCommand) Filter {
-	switch cmd {
+func NewFilter(option *SearchOption) Filter {
+	switch option.Command {
 	case RipGrep:
 		return newRg()
 	case FuzzySearch:
-		return newFuzzySearch()
+		return newFuzzySearch(option)
 	default:
 		return newRg()
 	}

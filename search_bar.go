@@ -90,7 +90,7 @@ func initSearchBar() {
 			clearResult()
 			return
 		}
-		ftr := filter.NewFilter(app.searchOption.Command)
+		ftr := filter.NewFilter(app.searchOption)
 		results, err := ftr.Search(text, app.searchOption)
 		if err != nil {
 			logger.Error("search error : %v", err)
