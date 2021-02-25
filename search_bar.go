@@ -6,6 +6,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/tjmtmmnk/ilse/filter"
+	"github.com/tjmtmmnk/ilse/util"
 )
 
 var (
@@ -93,7 +94,7 @@ func initSearchBar() {
 		ftr := filter.NewFilter(app.searchOption)
 		results, err := ftr.Search(text, app.searchOption)
 		if err != nil {
-			logger.Error("search error : %v", err)
+			util.Logger.Error("search error : %v", err)
 		}
 		app.state.mutex.Lock()
 		app.state.matched = results

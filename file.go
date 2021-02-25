@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/tjmtmmnk/ilse/util"
 )
 
 func getEditorLineFlag() string {
@@ -48,6 +50,6 @@ func openFile(fileName string, lineNum int) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		logger.Error("can't open file")
+		util.Logger.Error("can't open file")
 	}
 }

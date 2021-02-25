@@ -35,7 +35,7 @@ func initTree() error {
 		}
 		if event.Key() == tcell.KeyRight || event.Rune() == 'l' {
 			if err := expand(tree.GetCurrentNode()); err != nil {
-				logger.Error("expand error : %v", err)
+				util.Logger.Error("expand error : %v", err)
 			}
 		}
 		return event

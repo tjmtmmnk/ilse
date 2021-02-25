@@ -14,9 +14,8 @@ type ilse struct {
 }
 
 var (
-	app    *ilse
-	conf   *Config
-	logger *Logger
+	app  *ilse
+	conf *Config
 )
 
 func initApp() error {
@@ -57,19 +56,12 @@ func initApp() error {
 }
 
 func Init(cfg *Config) error {
-	var err error
-
 	conf = cfg
 
 	if err := initApp(); err != nil {
 		return err
 	}
 	if err := initFrame(); err != nil {
-		return err
-	}
-
-	logger, err = newLogger()
-	if err != nil {
 		return err
 	}
 
