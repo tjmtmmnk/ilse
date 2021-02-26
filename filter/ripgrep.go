@@ -2,6 +2,8 @@ package filter
 
 import (
 	"os/exec"
+
+	"github.com/tjmtmmnk/ilse/util"
 )
 
 type rg struct{}
@@ -47,8 +49,15 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	}
 
 	if err != nil {
+		util.Logger.Warn(err)
 		return []SearchResult{}, err
 	}
 
-	return convert(string(out), option), nil
+	results, err := convert(string(out), option)
+	if err != nil {
+		util.Logger.Warn(err)
+		return []SearchResult{}, err
+	}
+
+	return results, nil
 }
