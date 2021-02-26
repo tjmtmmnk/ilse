@@ -1,6 +1,6 @@
 module github.com/tjmtmmnk/ilse
 
-go 1.15
+go 1.16
 
 require (
 	github.com/gdamore/tcell/v2 v2.2.0
