@@ -15,25 +15,20 @@ import (
 )
 
 func newFuzzySearch(option *SearchOption) *fuzzySearch {
-	fs := &fuzzySearch{
-		cachedFile:  make(map[string]string),
-		isDuplicate: make(map[string]bool),
-	}
-	fs := &fuzzySearch{}
+	fuzzy := &fuzzySearch{}
 	gitIgnorePath := filepath.Join(option.TargetDir, ".gitignore")
 	if _, err := os.Stat(gitIgnorePath); !os.IsNotExist(err) {
 		gitIgnore, err := gitignore.NewGitIgnore(gitIgnorePath)
 		if err == nil {
-			fs.lookGitIgnore = true
-			fs.gitIgnore = gitIgnore
+			fuzzy.lookGitIgnore = true
+			fuzzy.gitIgnore = gitIgnore
 		}
 	}
-	return fs
+	return fuzzy
 }
 
 type fuzzySearch struct {
 	cachedFile    map[string]string
-	isDuplicate   map[string]bool
 	gitIgnore     gitignore.IgnoreMatcher
 	lookGitIgnore bool
 }
@@ -43,9 +38,6 @@ type file struct {
 	text string
 }
 
-func (f *fuzzySearch) purge() {
-	f.cachedFile = make(map[string]string)
-	f.isDuplicate = make(map[string]bool)
 type fileSystem struct {
 	fs.ReadDirFS
 }
@@ -60,20 +52,24 @@ func (fs *fileSystem) ReadDir(name string) ([]fs.DirEntry, error) {
 
 func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	var (
-		results []SearchResult
-		texts   []string
-		dir     string
+		dir string
 	)
-	f.purge()
 
-	length := len(q)
+	f.cachedFile = make(map[string]string)
+	texts := make([]string, 0, option.Limit)
+	results := make([]SearchResult, 0, option.Limit)
+	isDuplicateLine := make(map[string]bool)
 
 	if option.TargetDir != "" {
 		dir = option.TargetDir
 	} else {
 		dir = "."
 	}
-	files := f.getFiles(dir)
+
+	files, err := f.getFiles(dir, option.Limit)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, file := range files {
 		texts = append(texts, file.text)
@@ -81,17 +77,20 @@ func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, er
 
 	matches := fuzzy.Find(q, texts)
 	for _, m := range matches {
-		for _, idx := range f.reIndex(m.MatchedIndexes, length) {
+		for _, idx := range f.reIndex(m.MatchedIndexes, len(q)) {
+			if len(files) <= m.Index {
+				continue
+			}
 			fileName := files[m.Index].name
-			lineNum, text := f.getLine(files[m.Index].name, idx+length)
+			lineNum, text := f.getLine(files[m.Index].name, idx+len(q))
 			if text == "" {
 				continue
 			}
 			key := fmt.Sprintf("%s%d", fileName, lineNum)
-			if f.isDuplicate[key] {
+			if isDuplicateLine[key] {
 				continue
 			}
-			f.isDuplicate[key] = true
+			isDuplicateLine[key] = true
 			results = append(results, SearchResult{fileName, lineNum, text})
 		}
 	}
@@ -125,14 +124,19 @@ func (f *fuzzySearch) getLine(fileName string, pos int) (int, string) {
 	return lineNum, lineText
 }
 
-func (f *fuzzySearch) getFiles(dir string) []file {
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	var files []file
+func (f *fuzzySearch) getFiles(dir string, limit int) ([]file, error) {
+	var (
+		wg sync.WaitGroup
+		mu sync.Mutex
+	)
+	files := make([]file, 0, limit*2)
 
-	fileNames, _ := f.getFileNames(dir)
+	fileNames, err := f.getFileNames(dir, limit)
+	if err != nil {
+		return nil, err
+	}
+
 	for _, name := range fileNames {
-
 		wg.Add(1)
 		go func(name string) {
 			defer wg.Done()
@@ -152,8 +156,9 @@ func (f *fuzzySearch) getFiles(dir string) []file {
 		}(name)
 	}
 	wg.Wait()
-	return files
+	return files, nil
 }
+
 func (f *fuzzySearch) reIndex(indexes []int, queryLength int) []int {
 	if len(indexes) == 0 {
 		return []int{}
@@ -173,7 +178,7 @@ func (f *fuzzySearch) reIndex(indexes []int, queryLength int) []int {
 
 func (f *fuzzySearch) getFileNames(root string, limit int) ([]string, error) {
 	fsm := &fileSystem{}
-	fileNames := make([]string, 0, limit)
+	fileNames := make([]string, 0, limit*2)
 	err := fs.WalkDir(fsm, root, func(path string, d fs.DirEntry, err error) error {
 		if f.lookGitIgnore && f.gitIgnore.Match(path, d.IsDir()) {
 			return fs.SkipDir
