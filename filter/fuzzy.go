@@ -2,6 +2,7 @@ package filter
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -18,8 +19,9 @@ func newFuzzySearch(option *SearchOption) *fuzzySearch {
 		cachedFile:  make(map[string]string),
 		isDuplicate: make(map[string]bool),
 	}
+	fs := &fuzzySearch{}
 	gitIgnorePath := filepath.Join(option.TargetDir, ".gitignore")
-	if _, err := os.Stat(gitIgnorePath); os.IsExist(err) {
+	if _, err := os.Stat(gitIgnorePath); !os.IsNotExist(err) {
 		gitIgnore, err := gitignore.NewGitIgnore(gitIgnorePath)
 		if err == nil {
 			fs.lookGitIgnore = true
@@ -44,6 +46,16 @@ type file struct {
 func (f *fuzzySearch) purge() {
 	f.cachedFile = make(map[string]string)
 	f.isDuplicate = make(map[string]bool)
+type fileSystem struct {
+	fs.ReadDirFS
+}
+
+func (fs *fileSystem) Open(name string) (fs.File, error) {
+	return os.Open(name)
+}
+
+func (fs *fileSystem) ReadDir(name string) ([]fs.DirEntry, error) {
+	return os.ReadDir(name)
 }
 
 func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, error) {
@@ -159,21 +171,24 @@ func (f *fuzzySearch) reIndex(indexes []int, queryLength int) []int {
 	return reIndexes
 }
 
-func (f *fuzzySearch) getFileNames(dir string) ([]string, error) {
-	var fileNames []string
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
+func (f *fuzzySearch) getFileNames(root string, limit int) ([]string, error) {
+	fsm := &fileSystem{}
+	fileNames := make([]string, 0, limit)
+	err := fs.WalkDir(fsm, root, func(path string, d fs.DirEntry, err error) error {
+		if f.lookGitIgnore && f.gitIgnore.Match(path, d.IsDir()) {
+			return fs.SkipDir
 		}
-		if f.lookGitIgnore && f.gitIgnore.Match(path, false) {
-			return nil
-		}
+
 		// skip hidden directory or file
-		components := strings.Split(path, "/")
-		for _, comp := range components {
-			if strings.HasPrefix(comp, ".") {
-				return nil
+		if strings.HasPrefix(d.Name(), ".") {
+			if d.IsDir() {
+				return fs.SkipDir
 			}
+			return nil
+		}
+
+		if d.IsDir() {
+			return nil
 		}
 		fileNames = append(fileNames, path)
 		return nil
