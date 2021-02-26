@@ -1,9 +1,6 @@
 package ilse
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/tjmtmmnk/ilse/util"
 )
 
@@ -22,12 +19,7 @@ func NewConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	userHomeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	homeDir := fmt.Sprintf("%s/.ilse", userHomeDir)
+	homeDir := util.GetHomeDir()
 
 	return &Config{
 		Theme:            "OneHalfDark",

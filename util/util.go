@@ -20,6 +20,12 @@ func ShortFileName(fileName string) string {
 	}
 }
 
+func GetHomeDir() string {
+	userHomeDir, _ := os.UserHomeDir()
+	homeDir := fmt.Sprintf("%s/.ilse", userHomeDir)
+	return homeDir
+}
+
 // if use git, return repository
 // else return current directory
 func GetUserWorkDir() (string, error) {

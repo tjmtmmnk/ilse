@@ -30,7 +30,6 @@ var Logger = newLogger()
 
 func newLogger() *logger {
 	path := fmt.Sprintf("%s/log.txt", GetHomeDir())
-	log.Println(path)
 	file, _ := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
 	l := log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
 
