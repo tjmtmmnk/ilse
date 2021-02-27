@@ -1,12 +1,18 @@
 package filter
 
 import (
+	"bufio"
 	"errors"
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/tjmtmmnk/ilse/util"
+)
+
+const (
+	timeout = 300 * time.Millisecond
 )
 
 type rg struct{}
@@ -23,24 +29,7 @@ func isValidRegex(q string) bool {
 	return true
 }
 
-func convert(result string, option *SearchOption) ([]SearchResult, error) {
-	results := make([]SearchResult, 0, option.Limit)
-	for i, s := range strings.Split(result, "\n") {
-		if i > option.Limit {
-			break
-		}
-		res, err := split(s, option)
-		if err != nil {
-			return []SearchResult{}, err
-		}
-		if res != nil {
-			results = append(results, *res)
-		}
-	}
-	return results, nil
-}
-
-func split(str string, option *SearchOption) (*SearchResult, error) {
+func convert(str string, option *SearchOption) (*SearchResult, error) {
 	// first remove reset flag included in path, line
 	str = strings.Replace(str, "\x1b[0m", "", 4)
 	splitted := strings.Split(str, ":")
@@ -89,20 +78,47 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 		cmd = append(cmd, option.TargetDir)
 	}
 
-	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
-	if len(out) == 0 {
-		return []SearchResult{}, nil
-	}
+	ecmd := exec.Command(cmd[0], cmd[1:]...)
+	stdout, err := ecmd.StdoutPipe()
 
 	if err != nil {
-		util.Logger.Warn(err)
+		util.Logger.Warn("command exec stdout pipe error : ", err)
 		return []SearchResult{}, err
 	}
 
-	results, err := convert(string(out), option)
-	if err != nil {
-		util.Logger.Warn(err)
+	if err := ecmd.Start(); err != nil {
+		util.Logger.Warn("command exec start error : ", err)
 		return []SearchResult{}, err
+	}
+
+	results := make([]SearchResult, 0, option.Limit)
+
+	scanner := bufio.NewScanner(stdout)
+	done := make(chan error)
+	go func() {
+		defer close(done)
+		for scanner.Scan() {
+			if len(results) > option.Limit {
+				break
+			}
+			result, err := convert(scanner.Text(), option)
+			if err != nil {
+				continue
+			}
+			results = append(results, *result)
+		}
+		done <- ecmd.Wait()
+	}()
+
+	select {
+	case <-time.After(time.Duration(timeout)):
+		if err := ecmd.Process.Kill(); err != nil {
+			util.Logger.Error("kill error : ", err)
+		}
+	case err := <-done:
+		if err != nil {
+			util.Logger.Warn("process error : ", err)
+		}
 	}
 
 	return results, nil
