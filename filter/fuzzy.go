@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -12,11 +13,14 @@ import (
 
 	"github.com/monochromegane/go-gitignore"
 	"github.com/sahilm/fuzzy"
+	"github.com/tjmtmmnk/ilse/util"
 )
 
 func newFuzzySearch(option *SearchOption) *fuzzySearch {
 	fuzzy := &fuzzySearch{}
+
 	gitIgnorePath := filepath.Join(option.TargetDir, ".gitignore")
+
 	if _, err := os.Stat(gitIgnorePath); !os.IsNotExist(err) {
 		gitIgnore, err := gitignore.NewGitIgnore(gitIgnorePath)
 		if err == nil {
@@ -55,10 +59,10 @@ func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, er
 		dir string
 	)
 
-	f.cachedFile = make(map[string]string)
+	f.cachedFile = make(map[string]string, option.Limit)
 	texts := make([]string, 0, option.Limit)
 	results := make([]SearchResult, 0, option.Limit)
-	isDuplicateLine := make(map[string]bool)
+	isDuplicateLine := make(map[string]bool, option.Limit)
 
 	if option.TargetDir != "" {
 		dir = option.TargetDir
@@ -68,6 +72,7 @@ func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, er
 
 	files, err := f.getFiles(dir, option.Limit)
 	if err != nil {
+		util.Logger.Warn("get file error : ", err)
 		return nil, err
 	}
 
@@ -112,6 +117,7 @@ func (f *fuzzySearch) getLine(fileName string, pos int) (int, string) {
 		to = len(text) - 1
 	}
 	lineNum := 1
+
 	var sb strings.Builder
 	sb.Grow(to)
 	for _, c := range text[:to] {
@@ -134,6 +140,7 @@ func (f *fuzzySearch) getFiles(dir string, limit int) ([]file, error) {
 
 	fileNames, err := f.getFileNames(dir, limit)
 	if err != nil {
+		util.Logger.Warn("get file name error : ", err)
 		return nil, err
 	}
 
@@ -141,11 +148,28 @@ func (f *fuzzySearch) getFiles(dir string, limit int) ([]file, error) {
 		wg.Add(1)
 		go func(name string) {
 			defer wg.Done()
-			text, err := ioutil.ReadFile(name)
+			var sb strings.Builder
+			sb.Grow(100)
+			fp, err := os.Open(name)
 			if err != nil {
+				util.Logger.Warn("file open error : ", err)
 				return
 			}
-			mimeType := http.DetectContentType(text)
+			defer fp.Close()
+
+			scanner := bufio.NewScanner(fp)
+
+			for scanner.Scan() {
+				if scanner.Err() != nil {
+					util.Logger.Warn("scan error : ", err)
+					return
+				}
+				if scanner.Text() != "" {
+					sb.WriteString(scanner.Text())
+				}
+			}
+			text := sb.String()
+			mimeType := http.DetectContentType([]byte(text))
 			isBinary := !strings.HasPrefix(mimeType, "text/plain")
 			if isBinary {
 				return
@@ -153,7 +177,7 @@ func (f *fuzzySearch) getFiles(dir string, limit int) ([]file, error) {
 
 			mu.Lock()
 			defer mu.Unlock()
-			files = append(files, file{name, string(text)})
+			files = append(files, file{name, text})
 		}(name)
 	}
 	wg.Wait()
