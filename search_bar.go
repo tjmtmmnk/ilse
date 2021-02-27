@@ -2,6 +2,7 @@ package ilse
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -14,49 +15,38 @@ var (
 )
 
 func searchBarHeader() string {
-	filterName := func() string {
-		name := ""
-		switch app.searchOption.Command {
-		case filter.RipGrep:
-			name = "Rg"
-		case filter.FuzzySearch:
-			name = "Fs"
-		}
-		return name
-	}()
+	var sb strings.Builder
+	sb.Grow(5)
 
-	modeName := func() string {
-		if app.searchOption.Command == filter.FuzzySearch {
-			return ""
-		}
+	switch app.searchOption.Command {
+	case filter.RipGrep:
+		sb.WriteString("Rg")
+	case filter.FuzzySearch:
+		sb.WriteString("Fs")
+	}
 
-		name := ""
+	if app.searchOption.Command == filter.RipGrep {
+		sb.WriteString("|")
 		switch opt := app.searchOption; {
 		case opt.Mode == filter.HeadMatch:
-			name = "HM"
+			sb.WriteString("HM")
 		case opt.Mode == filter.WordMatch:
-			name = "WM"
+			sb.WriteString("WM")
 		case opt.Mode == filter.Regex:
-			name = "Re"
+			sb.WriteString("Re")
 		}
 
 		if app.searchOption.Mode != filter.Regex && app.searchOption.Case {
-			name += ",C"
+			sb.WriteString(",C")
 		}
-
-		return name
-	}()
+	}
 
 	isOverMax := len(app.state.matched) > conf.MaxSearchResults
 
-	header := filterName
-	if modeName != "" {
-		header += ("|" + modeName)
-	}
 	if isOverMax {
-		header += (" " + fmt.Sprintf("(%d+)", conf.MaxSearchResults))
+		sb.WriteString(" " + fmt.Sprintf("(%d+)", conf.MaxSearchResults))
 	}
-	header = fmt.Sprintf("(%s) >>> ", header)
+	header := fmt.Sprintf("(%s) >>> ", sb.String())
 
 	return header
 }

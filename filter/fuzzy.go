@@ -107,21 +107,22 @@ func (f *fuzzySearch) getLine(fileName string, pos int) (int, string) {
 		text = string(content)
 		f.cachedFile[fileName] = text
 	}
-	lineNum := 1
-	lineText := ""
 	to := pos
 	if to > len(text) {
 		to = len(text) - 1
 	}
+	lineNum := 1
+	var sb strings.Builder
+	sb.Grow(to)
 	for _, c := range text[:to] {
-		lineText += string(c)
+		sb.WriteRune(c)
 
 		if c == '\n' {
 			lineNum++
-			lineText = ""
+			sb.Reset()
 		}
 	}
-	return lineNum, lineText
+	return lineNum, sb.String()
 }
 
 func (f *fuzzySearch) getFiles(dir string, limit int) ([]file, error) {
