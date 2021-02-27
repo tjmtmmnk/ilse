@@ -205,8 +205,12 @@ func (f *fuzzySearch) getFileNames(root string, limit int) ([]string, error) {
 	fsm := &fileSystem{}
 	fileNames := make([]string, 0, limit*2)
 	err := fs.WalkDir(fsm, root, func(path string, d fs.DirEntry, err error) error {
+		util.Logger.Debug(path)
 		if f.lookGitIgnore && f.gitIgnore.Match(path, d.IsDir()) {
-			return fs.SkipDir
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
 		}
 
 		// skip hidden directory or file
@@ -224,6 +228,7 @@ func (f *fuzzySearch) getFileNames(root string, limit int) ([]string, error) {
 		return nil
 	})
 	if err != nil {
+		util.Logger.Warn("walk error : ", err)
 		return []string{}, err
 	}
 	return fileNames, nil
