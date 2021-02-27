@@ -2,6 +2,7 @@ package filter
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"os/exec"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 )
 
 const (
-	timeout = 300 * time.Millisecond
+	timeout = 100 * time.Millisecond
 )
 
 type rg struct{}
@@ -78,7 +79,9 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 		cmd = append(cmd, option.TargetDir)
 	}
 
-	ecmd := exec.Command(cmd[0], cmd[1:]...)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	ecmd := exec.CommandContext(ctx, cmd[0], cmd[1:]...)
 	stdout, err := ecmd.StdoutPipe()
 
 	if err != nil {
@@ -94,31 +97,22 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 	results := make([]SearchResult, 0, option.Limit)
 
 	scanner := bufio.NewScanner(stdout)
-	done := make(chan error)
-	go func() {
-		defer close(done)
-		for scanner.Scan() {
-			if len(results) > option.Limit {
-				break
-			}
-			result, err := convert(scanner.Text(), option)
-			if err != nil {
-				continue
-			}
-			results = append(results, *result)
+	for scanner.Scan() {
+		if len(results) > option.Limit {
+			break
 		}
-		done <- ecmd.Wait()
-	}()
-
-	select {
-	case <-time.After(time.Duration(timeout)):
-		if err := ecmd.Process.Kill(); err != nil {
-			util.Logger.Error("kill error : ", err)
-		}
-	case err := <-done:
+		result, err := convert(scanner.Text(), option)
 		if err != nil {
-			util.Logger.Warn("process error : ", err)
+			continue
 		}
+		results = append(results, *result)
+	}
+	if err := ecmd.Wait(); err != nil {
+		util.Logger.Warn("command exec wait error : ", err)
+	}
+
+	if ctx.Err() == context.DeadlineExceeded {
+		util.Logger.Warn("Timeout")
 	}
 
 	return results, nil
