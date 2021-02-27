@@ -224,6 +224,18 @@ func (f *fuzzySearch) getFileNames(root string, limit int) ([]string, error) {
 		if d.IsDir() {
 			return nil
 		}
+
+		info, err := d.Info()
+		if err != nil {
+			util.Logger.Warn("file info error : ", err)
+			return nil
+		}
+
+		// skip over 1MB file
+		if info.Size() > 1000000 {
+			return nil
+		}
+
 		fileNames = append(fileNames, path)
 		return nil
 	})
