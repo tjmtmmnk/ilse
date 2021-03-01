@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
@@ -29,24 +28,20 @@ func GetHomeDir() string {
 // if use git, return repository
 // else return current directory
 func GetUserWorkDir() (string, error) {
-	repo, err := getGitRepository()
+	isManaged, err := isManagedByGit()
 	if err != nil {
-		return "", err
+		return ".", nil
 	}
-	if repo != "" {
-		return repo, nil
+	if isManaged {
+		repo, err := getGitRepository()
+		if err != nil {
+			return ".", err
+		}
+		if repo != "" {
+			return repo, nil
+		}
 	}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	evaled, err := filepath.EvalSymlinks(wd)
-	if err != nil {
-		return "", err
-	}
-
-	return evaled, nil
+	return ".", nil
 }
 
 func getGitRepository() (string, error) {
@@ -55,10 +50,16 @@ func getGitRepository() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	str := strings.Split(string(out), "\n")
-	if len(str) == 0 {
-		return "", nil
+	repo := string(out)
+	return strings.TrimRight(repo, "\r\n"), nil
+}
+
+func isManagedByGit() (bool, error) {
+	cmd := []string{"git", "rev-parse", "--all"}
+	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
+	if err != nil {
+		return false, err
 	}
-	repo := str[0]
-	return repo, nil
+	isManaged := len(out) != 0
+	return isManaged, nil
 }
