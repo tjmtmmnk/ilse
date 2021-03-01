@@ -55,22 +55,16 @@ func (fs *fileSystem) ReadDir(name string) ([]fs.DirEntry, error) {
 }
 
 func (f *fuzzySearch) Search(q string, option *SearchOption) ([]SearchResult, error) {
-	var (
-		dir string
-	)
-
 	f.cachedFile = make(map[string]string, option.Limit)
 	texts := make([]string, 0, option.Limit)
 	results := make([]SearchResult, 0, option.Limit)
 	isDuplicateLine := make(map[string]bool, option.Limit)
 
-	if option.TargetDir != "" {
-		dir = option.TargetDir
-	} else {
-		dir = "."
+	if option.TargetDir == "" {
+		option.TargetDir = "."
 	}
 
-	files, err := f.getFiles(dir, option.Limit)
+	files, err := f.getFiles(option.TargetDir, option.Limit)
 	if err != nil {
 		util.Logger.Warn("get file error : ", err)
 		return nil, err

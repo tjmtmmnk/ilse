@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	timeout = 100 * time.Millisecond
+	timeout = 150 * time.Millisecond
 )
 
 type rg struct{}
@@ -105,7 +105,9 @@ func (r *rg) Search(q string, option *SearchOption) ([]SearchResult, error) {
 		if err != nil {
 			continue
 		}
-		results = append(results, *result)
+		if result != nil {
+			results = append(results, *result)
+		}
 	}
 	if err := ecmd.Wait(); err != nil {
 		util.Logger.Warn("command exec wait error : ", err)
