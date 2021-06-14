@@ -5,6 +5,8 @@ github.com/gdamore/tcell v1.4.0/go.mod h1:vxEiSDZdW3L+Uhjii9c3375IlDmR05bzxY404Z
 github.com/gdamore/tcell/v2 v2.0.1-0.20201017141208-acf90d56d591/go.mod h1:vSVL/GV5mCSlPC6thFP5kfOFdM9MGZcalipmpTxTgQA=
 github.com/gdamore/tcell/v2 v2.2.0 h1:vSyEgKwraXPSOkvCk7IwOSyX+Pv3V2cV9CikJMXg4U4=
 github.com/gdamore/tcell/v2 v2.2.0/go.mod h1:cTTuF84Dlj/RqmaCIV5p4w8uG1zWdk0SF6oBpwHp4fU=
+github.com/gdamore/tcell/v2 v2.3.11 h1:ECO6WqHGbKZ3HrSL7bG/zArMCmLaNr5vcjjMVnLHpzc=
+github.com/gdamore/tcell/v2 v2.3.11/go.mod h1:cTTuF84Dlj/RqmaCIV5p4w8uG1zWdk0SF6oBpwHp4fU=
 github.com/integrii/flaggy v1.4.4 h1:8fGyiC14o0kxhTqm2VBoN19fDKPZsKipP7yggreTMDc=
 github.com/integrii/flaggy v1.4.4/go.mod h1:tnTxHeTJbah0gQ6/K0RW0J7fMUBk9MCF5blhm43LNpI=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
